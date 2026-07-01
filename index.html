@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Katalog projektów — Gabriel Pawłowski</title>
+  <style>
+    :root {
+      --brand: #4f46e5;
+      --brand-dark: #3730a3;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 50%, #ecfeff 100%);
+    }
+    a { color: inherit; text-decoration: none; }
+
+    header.nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      padding: 0.9rem 1.25rem;
+    }
+    header.nav .inner {
+      max-width: 56rem; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .brand { font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.5rem; }
+    .brand .badge {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      font-size: 1rem;
+    }
+    .navlinks a { font-weight: 600; color: var(--muted); }
+    .navlinks a:hover { color: var(--brand); }
+
+    main { max-width: 56rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    h1 { font-size: 1.6rem; letter-spacing: -0.01em; margin-bottom: 0.35rem; }
+    .lead { color: var(--muted); margin-bottom: 1.5rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
+    .card {
+      background: #fff; border: 1px solid var(--line); border-radius: 1rem;
+      padding: 1.1rem 1.2rem; box-shadow: 0 12px 30px -20px rgba(79,70,229,0.4);
+      transition: transform 0.1s, box-shadow 0.15s; display: block;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -20px rgba(79,70,229,0.55); }
+    .card .emoji { font-size: 1.6rem; }
+    .card h2 { font-size: 1.05rem; margin: 0.4rem 0 0.25rem; }
+    .card p { color: var(--muted); font-size: 0.9rem; }
+
+    .back { display: inline-block; margin-bottom: 1rem; color: var(--brand); font-weight: 600; }
+    .detail {
+      background: #fff; border: 1px solid var(--line); border-radius: 1.25rem;
+      padding: 1.75rem; box-shadow: 0 20px 45px -20px rgba(79,70,229,0.35);
+    }
+    .detail .emoji { font-size: 3rem; }
+    .detail h1 { margin: 0.5rem 0; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0 1.25rem; }
+    .tag { padding: 0.3rem 0.75rem; border-radius: 999px; background: #eef2ff; color: var(--brand-dark); font-size: 0.8rem; font-weight: 600; }
+    .btn {
+      display: inline-block; margin-top: 0.5rem; padding: 0.7rem 1.25rem;
+      font-weight: 700; color: #fff; border-radius: 0.8rem;
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    }
+    .meta { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; }
+
+    .notfound { text-align: center; padding: 3rem 1rem; }
+    .notfound .code { font-size: 4rem; font-weight: 900; color: var(--brand); }
+    .loading { text-align:center; color: var(--muted); padding: 3rem; }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react-dom": "https://esm.sh/react-dom@18.3.1?external=react",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client?external=react",
+      "react-router-dom": "https://esm.sh/react-router-dom@6.26.2?external=react,react-dom",
+      "htm": "https://esm.sh/htm@3.1.1"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="root"><div class="loading">Ładowanie aplikacji…</div></div>
+
+  <script type="module">
+    import { createElement } from "react";
+    import { createRoot } from "react-dom/client";
+    import {
+      HashRouter, Routes, Route, Link, Outlet, useParams,
+    } from "react-router-dom";
+    import htm from "htm";
+
+    const html = htm.bind(createElement);
+
+    // --- dane (statyczna tablica; szczegóły powiązane przez ID) ---
+    const ITEMS = [
+      { id: 1, emoji: "👋", title: "Strona powitalna", desc: "Minimalna strona „Witaj, jestem…” z krótkim bio.", tech: ["HTML", "CSS"], url: "https://gabipaw.github.io/gabriel-welcome/" },
+      { id: 2, emoji: "🔢", title: "Licznik kliknięć", desc: "Przycisk zwiększający licznik oraz reset.", tech: ["HTML", "CSS", "JS"], url: "https://gabipaw.github.io/gabriel-counter/" },
+      { id: 3, emoji: "📝", title: "Lista To-Do", desc: "Zadania z filtrami i zapisem w localStorage.", tech: ["JS", "localStorage"], url: "https://gabipaw.github.io/gabriel-todo/" },
+      { id: 4, emoji: "👥", title: "Użytkownicy z API", desc: "Pobieranie danych z API, karty, wyszukiwarka.", tech: ["fetch", "async/await"], url: "https://gabipaw.github.io/api-fetch/" },
+      { id: 5, emoji: "🔐", title: "Formularz z walidacją", desc: "Rejestracja z walidacją na żywo i siłą hasła.", tech: ["Walidacja", "UX"], url: "https://gabipaw.github.io/formularz/" },
+      { id: 6, emoji: "🔴", title: "Cztery w rzędzie", desc: "Gra Connect Four z konfetti, responsywna.", tech: ["Gra 2D", "Canvas"], url: "https://gabipaw.github.io/connect-four/" },
+    ];
+
+    function Layout() {
+      return html`
+        <div>
+          <header class="nav">
+            <div class="inner">
+              <${Link} to="/" class="brand" data-testid="brand">
+                <span class="badge">◧</span> Katalog projektów
+              <//>
+              <nav class="navlinks">
+                <${Link} to="/" data-testid="nav-home">Strona główna</${Link}>
+              </nav>
+            </div>
+          </header>
+          <main><${Outlet} /></main>
+        </div>`;
+    }
+
+    function List() {
+      return html`
+        <div>
+          <h1>Moje projekty stażowe</h1>
+          <p class="lead">Kliknij projekt, aby zobaczyć szczegóły (adres zawiera ID, np. <code>#/items/3</code>).</p>
+          <div class="grid" data-testid="list">
+            ${ITEMS.map((it) => html`
+              <${Link} key=${it.id} to=${"/items/" + it.id} class="card" data-testid=${"item-" + it.id}>
+                <div class="emoji">${it.emoji}</div>
+                <h2>${it.title}</h2>
+                <p>${it.desc}</p>
+              <//>`)}
+          </div>
+        </div>`;
+    }
+
+    function Details() {
+      const { id } = useParams();
+      const item = ITEMS.find((i) => String(i.id) === String(id));
+      if (!item) {
+        return html`<${NotFound} message=${"Nie ma projektu o ID " + id + "."} />`;
+      }
+      return html`
+        <div>
+          <${Link} to="/" class="back" data-testid="back">← Wróć do listy<//>
+          <div class="detail" data-testid="details">
+            <div class="emoji">${item.emoji}</div>
+            <h1 data-testid="details-title">${item.title}</h1>
+            <div class="tags">${item.tech.map((t) => html`<span class="tag" key=${t}>${t}</span>`)}</div>
+            <p>${item.desc}</p>
+            <a class="btn" href=${item.url} target="_blank" rel="noopener">Otwórz aplikację ↗</a>
+            <p class="meta">ID projektu: <strong>${item.id}</strong> · trasa: <code>#/items/${item.id}</code></p>
+          </div>
+        </div>`;
+    }
+
+    function NotFound({ message }) {
+      return html`
+        <div class="notfound" data-testid="notfound">
+          <div class="code">404</div>
+          <h1>Nie znaleziono strony</h1>
+          <p class="lead">${message || "Ta trasa nie istnieje."}</p>
+          <${Link} to="/" class="btn">Wróć na stronę główną<//>
+        </div>`;
+    }
+
+    function App() {
+      return html`
+        <${HashRouter}>
+          <${Routes}>
+            <${Route} path="/" element=${html`<${Layout} />`}>
+              <${Route} index element=${html`<${List} />`} />
+              <${Route} path="items/:id" element=${html`<${Details} />`} />
+              <${Route} path="*" element=${html`<${NotFound} />`} />
+            <//>
+          <//>
+        <//>`;
+    }
+
+    createRoot(document.getElementById("root")).render(html`<${App} />`);
+  </script>
+</body>
+</html>
