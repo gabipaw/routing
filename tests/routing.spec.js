@@ -9,7 +9,7 @@ const LONG = { timeout: 20000 };
 test("lista: widok główny pokazuje projekty", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByTestId("list")).toBeVisible(LONG);
-  await expect(page.locator('[data-testid^="item-"]')).toHaveCount(10);
+  await expect(page.locator('[data-testid^="item-"]')).toHaveCount(11);
 });
 
 test("nawigacja do szczegółów: ID trafia do adresu URL", async ({ page }) => {
