@@ -21,6 +21,15 @@ test("zakładki: filtr kategorii zawęża listę", async ({ page }) => {
   await expect(page.locator('[data-testid^="item-"]')).toHaveCount(14);
 });
 
+test("wyszukiwarka: zawęża listę po frazie", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("search")).toBeVisible(LONG);
+  await page.getByTestId("search").fill("mozaika");
+  await expect(page.locator('[data-testid^="item-"]')).toHaveCount(1);
+  await page.getByTestId("search").fill("xyznieistnieje");
+  await expect(page.getByTestId("empty")).toBeVisible();
+});
+
 test("nawigacja do szczegółów: ID trafia do adresu URL", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("item-3").click(LONG);
