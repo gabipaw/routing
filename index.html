@@ -46,6 +46,15 @@
     h1 { font-size: 1.6rem; letter-spacing: -0.01em; margin-bottom: 0.35rem; }
     .lead { color: var(--muted); margin-bottom: 1.5rem; }
 
+    .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.35rem; }
+    .tab {
+      padding: 0.45rem 0.95rem; border-radius: 999px; border: 1px solid var(--line);
+      background: #fff; color: var(--muted); font-weight: 600; font-size: 0.9rem;
+      font-family: inherit; cursor: pointer; transition: color 0.12s, border-color 0.12s, background 0.12s;
+    }
+    .tab:hover { color: var(--brand); border-color: var(--brand); }
+    .tab.active { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--brand), var(--brand-dark)); }
+
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 1rem; }
     .card {
       background: #fff; border: 1px solid var(--line); border-radius: 1rem;
@@ -94,7 +103,7 @@
   <div id="root"><div class="loading">Ładowanie aplikacji…</div></div>
 
   <script type="module">
-    import { createElement } from "react";
+    import { createElement, useState } from "react";
     import { createRoot } from "react-dom/client";
     import {
       HashRouter, Routes, Route, Link, Outlet, useParams,
@@ -105,20 +114,29 @@
 
     // --- dane (statyczna tablica; szczegóły powiązane przez ID) ---
     const ITEMS = [
-      { id: 1, emoji: "👋", title: "Strona powitalna", desc: "Minimalna strona „Witaj, jestem…” z krótkim bio.", tech: ["HTML", "CSS"], url: "https://gabipaw.github.io/gabriel-welcome/" },
-      { id: 2, emoji: "🔢", title: "Licznik kliknięć", desc: "Przycisk zwiększający licznik oraz reset.", tech: ["HTML", "CSS", "JS"], url: "https://gabipaw.github.io/gabriel-counter/" },
-      { id: 3, emoji: "📝", title: "Lista To-Do", desc: "Zadania z filtrami i zapisem w localStorage.", tech: ["JS", "localStorage"], url: "https://gabipaw.github.io/gabriel-todo/" },
-      { id: 4, emoji: "👥", title: "Użytkownicy z API", desc: "Pobieranie danych z API, karty, wyszukiwarka.", tech: ["fetch", "async/await"], url: "https://gabipaw.github.io/api-fetch/" },
-      { id: 5, emoji: "🔐", title: "Formularz z walidacją", desc: "Rejestracja z walidacją na żywo i siłą hasła.", tech: ["Walidacja", "UX"], url: "https://gabipaw.github.io/formularz/" },
-      { id: 6, emoji: "🔴", title: "Cztery w rzędzie", desc: "Gra Connect Four z konfetti, responsywna.", tech: ["Gra 2D", "Canvas"], url: "https://gabipaw.github.io/connect-four/" },
-      { id: 7, emoji: "🗺️", title: "Katalog projektów (routing)", desc: "Wielostronicowa aplikacja z routingiem — ten katalog.", tech: ["React", "React Router"], url: "https://gabipaw.github.io/routing/" },
-      { id: 8, emoji: "🗒️", title: "Notatki (CRUD)", desc: "Pełny CRUD na backendzie Supabase (Postgres).", tech: ["CRUD", "Supabase", "REST"], url: "https://gabipaw.github.io/crud/" },
-      { id: 9, emoji: "🏰", title: "Tower Defense", desc: "Gra 2D: broń ścieżki wieżami przez 8 fal wrogów.", tech: ["Gra 2D", "Canvas"], url: "https://gabipaw.github.io/tower-defense/" },
-      { id: 10, emoji: "🔑", title: "Logowanie i sesja", desc: "Rejestracja, logowanie, trasa chroniona i wylogowanie.", tech: ["Supabase Auth", "Sesja", "JWT"], url: "https://gabipaw.github.io/auth/" },
-      { id: 11, emoji: "🎬", title: "Watchlista (anime/seriale/filmy)", desc: "Projekt końcowy: konto, lista „do obejrzenia” (CRUD z RLS) i wyszukiwarka TMDB.", tech: ["Supabase", "TMDB API", "RLS", "Routing"], url: "https://gabipaw.github.io/watchlist/" },
-      { id: 12, emoji: "🗂️", title: "Notatnik (kategorie → notatki)", desc: "Mini-apka z bazą i relacją 1:N; walidacja pustego tytułu po stronie serwera (CHECK).", tech: ["Supabase", "Relacja 1:N", "Walidacja serwerowa"], url: "https://gabipaw.github.io/notatnik/" },
-      { id: 13, emoji: "🛂", title: "Logowanie i role (admin / user)", desc: "Konta, dwie role i trasa chroniona serwerowo (Next.js proxy + SSR); admin widzi wszystkie wpisy, user tylko swoje — RLS w bazie.", tech: ["Next.js", "Supabase Auth", "Role", "RLS", "SSR"], url: "https://logowanie-role.onrender.com" },
-      { id: 14, emoji: "🎨", title: "Mozaika — recenzje wszystkich mediów", desc: "Aplikacja biznesowa: recenzje filmów (TMDB) i książek (Open Library) z sygnaturowym „dopasowaniem gustu” i rekomendacjami. Monorepo TypeScript, API na Hono, PostgreSQL + Prisma, PWA.", tech: ["TypeScript", "Hono API", "Prisma + Postgres", "PWA", "Dopasowanie gustu"], url: "https://mozaika-1.onrender.com" },
+      { id: 1, cat: "Strony", emoji: "👋", title: "Strona powitalna", desc: "Minimalna strona „Witaj, jestem…” z krótkim bio.", tech: ["HTML", "CSS"], url: "https://gabipaw.github.io/gabriel-welcome/" },
+      { id: 2, cat: "Narzędzia", emoji: "🔢", title: "Licznik kliknięć", desc: "Przycisk zwiększający licznik oraz reset.", tech: ["HTML", "CSS", "JS"], url: "https://gabipaw.github.io/gabriel-counter/" },
+      { id: 3, cat: "Narzędzia", emoji: "📝", title: "Lista To-Do", desc: "Zadania z filtrami i zapisem w localStorage.", tech: ["JS", "localStorage"], url: "https://gabipaw.github.io/gabriel-todo/" },
+      { id: 4, cat: "Aplikacje", emoji: "👥", title: "Użytkownicy z API", desc: "Pobieranie danych z API, karty, wyszukiwarka.", tech: ["fetch", "async/await"], url: "https://gabipaw.github.io/api-fetch/" },
+      { id: 5, cat: "Narzędzia", emoji: "🔐", title: "Formularz z walidacją", desc: "Rejestracja z walidacją na żywo i siłą hasła.", tech: ["Walidacja", "UX"], url: "https://gabipaw.github.io/formularz/" },
+      { id: 6, cat: "Gry", emoji: "🔴", title: "Cztery w rzędzie", desc: "Gra Connect Four z konfetti, responsywna.", tech: ["Gra 2D", "Canvas"], url: "https://gabipaw.github.io/connect-four/" },
+      { id: 7, cat: "Aplikacje", emoji: "🗺️", title: "Katalog projektów (routing)", desc: "Wielostronicowa aplikacja z routingiem — ten katalog.", tech: ["React", "React Router"], url: "https://gabipaw.github.io/routing/" },
+      { id: 8, cat: "Aplikacje", emoji: "🗒️", title: "Notatki (CRUD)", desc: "Pełny CRUD na backendzie Supabase (Postgres).", tech: ["CRUD", "Supabase", "REST"], url: "https://gabipaw.github.io/crud/" },
+      { id: 9, cat: "Gry", emoji: "🏰", title: "Tower Defense", desc: "Gra 2D: broń ścieżki wieżami przez 8 fal wrogów.", tech: ["Gra 2D", "Canvas"], url: "https://gabipaw.github.io/tower-defense/" },
+      { id: 10, cat: "Aplikacje", emoji: "🔑", title: "Logowanie i sesja", desc: "Rejestracja, logowanie, trasa chroniona i wylogowanie.", tech: ["Supabase Auth", "Sesja", "JWT"], url: "https://gabipaw.github.io/auth/" },
+      { id: 11, cat: "Aplikacje", emoji: "🎬", title: "Watchlista (anime/seriale/filmy)", desc: "Projekt końcowy: konto, lista „do obejrzenia” (CRUD z RLS) i wyszukiwarka TMDB.", tech: ["Supabase", "TMDB API", "RLS", "Routing"], url: "https://gabipaw.github.io/watchlist/" },
+      { id: 12, cat: "Aplikacje", emoji: "🗂️", title: "Notatnik (kategorie → notatki)", desc: "Mini-apka z bazą i relacją 1:N; walidacja pustego tytułu po stronie serwera (CHECK).", tech: ["Supabase", "Relacja 1:N", "Walidacja serwerowa"], url: "https://gabipaw.github.io/notatnik/" },
+      { id: 13, cat: "Aplikacje", emoji: "🛂", title: "Logowanie i role (admin / user)", desc: "Konta, dwie role i trasa chroniona serwerowo (Next.js proxy + SSR); admin widzi wszystkie wpisy, user tylko swoje — RLS w bazie.", tech: ["Next.js", "Supabase Auth", "Role", "RLS", "SSR"], url: "https://logowanie-role.onrender.com" },
+      { id: 14, cat: "Aplikacje", emoji: "🎨", title: "Mozaika — recenzje wszystkich mediów", desc: "Aplikacja biznesowa: recenzje filmów (TMDB) i książek (Open Library) z sygnaturowym „dopasowaniem gustu” i rekomendacjami. Monorepo TypeScript, API na Hono, PostgreSQL + Prisma, PWA.", tech: ["TypeScript", "Hono API", "Prisma + Postgres", "PWA", "Dopasowanie gustu"], url: "https://mozaika-1.onrender.com" },
+    ];
+
+    // Kolejność zakładek (filtr kategorii). "Wszystkie" pokazuje wszystko.
+    const CATS = [
+      { key: "Wszystkie", label: "Wszystkie" },
+      { key: "Aplikacje", label: "🧩 Aplikacje" },
+      { key: "Gry", label: "🎮 Gry" },
+      { key: "Narzędzia", label: "🛠️ Narzędzia" },
+      { key: "Strony", label: "📄 Strony" },
     ];
 
     function Layout() {
@@ -139,18 +157,30 @@
     }
 
     function List() {
+      const [cat, setCat] = useState("Wszystkie");
+      const shown = cat === "Wszystkie" ? ITEMS : ITEMS.filter((it) => it.cat === cat);
       return html`
         <div>
           <h1>Moje projekty stażowe</h1>
-          <p class="lead">Kliknij projekt, aby zobaczyć szczegóły (adres zawiera ID, np. <code>#/items/3</code>).</p>
+          <p class="lead">Filtruj po kategorii albo kliknij projekt, aby zobaczyć szczegóły (adres zawiera ID, np. <code>#/items/3</code>).</p>
+          <div class="tabs" data-testid="tabs">
+            ${CATS.map((c) => html`
+              <button
+                key=${c.key}
+                class=${"tab" + (c.key === cat ? " active" : "")}
+                data-testid=${"tab-" + c.key}
+                onClick=${() => setCat(c.key)}
+              >${c.label}</button>`)}
+          </div>
           <div class="grid" data-testid="list">
-            ${ITEMS.map((it) => html`
+            ${shown.map((it) => html`
               <${Link} key=${it.id} to=${"/items/" + it.id} class="card" data-testid=${"item-" + it.id}>
                 <div class="emoji">${it.emoji}</div>
                 <h2>${it.title}</h2>
                 <p>${it.desc}</p>
               <//>`)}
           </div>
+          ${shown.length === 0 ? html`<p class="lead" data-testid="empty">Brak projektów w tej kategorii.</p>` : null}
         </div>`;
     }
 

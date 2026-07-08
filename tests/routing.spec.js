@@ -12,6 +12,15 @@ test("lista: widok główny pokazuje projekty", async ({ page }) => {
   await expect(page.locator('[data-testid^="item-"]')).toHaveCount(14);
 });
 
+test("zakładki: filtr kategorii zawęża listę", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("tabs")).toBeVisible(LONG);
+  await page.getByTestId("tab-Gry").click();
+  await expect(page.locator('[data-testid^="item-"]')).toHaveCount(2);
+  await page.getByTestId("tab-Wszystkie").click();
+  await expect(page.locator('[data-testid^="item-"]')).toHaveCount(14);
+});
+
 test("nawigacja do szczegółów: ID trafia do adresu URL", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("item-3").click(LONG);
